@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1280">
+    <title>Superseed Rush</title>
+    <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; overflow-x: hidden; }
+        body { font-family: Arial, sans-serif; background-color: #1a2a3a; }
+        #gameContainer { width: 1280px; height: 720px; position: relative; margin: 0 auto; background: url('https://i.postimg.cc/qv6KVfkP/MAIN-TEMPLATE-05-MAIN-C-04-1960.png') no-repeat center -4px; background-size: 1280px 720px; }
+        #stockDisplay { position: absolute; left: 490px; top: 13px; font-size: 20px; color: #0088b3; text-shadow: 0 0 0.5px #000; text-align: center; z-index: 10; }
+        #stockGraphContainer { position: absolute; left: 400px; top: 507px; width: 440px; height: 208px; }
+        #stockGraph { width: 440px; height: 208px; background: rgba(0, 0, 0, 0.8); z-index: 1; }
+        #upButton { position: absolute; left: 574px; top: 471px; width: 40px; height: 33px; font-size: 12px; cursor: pointer; background: #1a3c5a; border: 1px solid #00ffcc; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); transition: all 0.2s ease; z-index: 10; }
+        #upButton:hover { background: #f6e52d; color: #39FF14; transform: scale(1.05); }
+        #upButton:disabled { background: #555; color: #999; border-color: #555; cursor: not-allowed; transform: none; }
+        #upButton:active { animation: pulse 0.3s ease; }
+        #downButton { position: absolute; left: 619px; top: 471px; width: 40px; height: 33px; font-size: 12px; cursor: pointer; background: #1a3c5a; border: 1px solid #00ffcc; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); transition: all 0.2s ease; z-index: 10; text-align: center; }
+        #downButton:hover { background: #f6e52d; color: #FF0000; transform: scale(1.05); }
+        #downButton:disabled { background: #555; color: #999; border-color: #555; cursor: not-allowed; transform: none; }
+        #downButton:active { animation: pulse 0.3s ease; }
+        #downText { position: relative; left: -2px; }
+        @keyframes pulse { 0% { border-color: #00ffcc; } 50% { border-color: #ffcc00; } 100% { border-color: #00ffcc; } }
+        #stockCountdown { position: absolute; left: 666px; top: 475px; font-size: 20px; color: #006666; text-shadow: 1px 1px 1px #000; z-index: 10; }
+        #playerNamePanel, #playerNamePanel1, #playerNamePanel2, #playerNamePanel3, #playerNamePanel4, #playerNamePanel5, #playerNamePanel6, #playerNamePanel7 { position: absolute; left: 34px; width: 80px; height: 20px; background: rgba(0, 0, 0, 0.5); font-size: 12px; color: #00ffcc; text-shadow: 0 0 3px #000; text-align: center; line-height: 20px; z-index: 10; display: block; }
+        #playerNamePanel { top: 66px; } #playerNamePanel1 { top: 115px; } #playerNamePanel2 { top: 164px; } #playerNamePanel3 { top: 217px; } #playerNamePanel4 { top: 269px; } #playerNamePanel5 { top: 320px; } #playerNamePanel6 { top: 371px; } #playerNamePanel7 { top: 422px; }
+        .first { color: #FFD700; animation: blink 1s infinite; }
+        .second { color: #C0C0C0; animation: blink 1s infinite; }
+        .third { color: #CD7F32; animation: blink 1s infinite; }
+        .fourth { color: #FFFFFF; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #namePopup { position: fixed; top: 0; left: 0; right: 0; width: 1280px; height: 720px; margin: 0 auto; background: url('https://i.postimg.cc/KYSdWzCC/LOADING-PAGE-04.png') no-repeat center center; background-size: 1280px 720px; background-color: #1a2a3a; z-index: 200; }
+        #namePopup.fade-out { animation: fadeOut 1s forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; } }
+        #namePopupContent { position: relative; width: 100%; height: 100%; }
+        #playerNameInput { position: absolute; left: 522px; top: 313px; width: 131px; height: 26px; padding: 7px; font-size: 10px; border: none; border-radius: 3px; z-index: 201; }
+        #joinButton { position: absolute; left: 522px; top: 353px; width: 131px; height: 26px; padding: 7px; font-size: 10px; background: #6200ea; color: #fff; border: none; border-radius: 3px; cursor: pointer; z-index: 201; }
+        #joinButton:hover { background: #00ffcc; color: #000; }
+        #loadingDots { position: absolute; left: 522px; top: 390px; font-size: 20px; color: #fff; text-shadow: 0 0 3px #000; z-index: 201; }
+        #loadingDots::after { content: '...'; animation: dots 1s steps(3, end) infinite; }
+        @keyframes dots { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+        #resultsOverlay { position: fixed; top: 0; left: 0; right: 0; width: 1280px; height: 720px; margin: 0 auto; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 200; }
+        #resultsOverlay.show { display: flex; animation: fadeInScale 0.5s ease forwards; }
+        @keyframes fadeInScale { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+        #resultsContent { background: #1a2a3a; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #00ffcc; color: #fff; }
+        #resultsContent h2 { color: #00ffcc; text-shadow: 0 0 3px #000; }
+        #resultsContent p { font-size: 18px; margin: 10px 0; }
+        #resultsContent p.first { color: #FFD700; }
+        #resultsContent p.second { color: #C0C0C0; }
+        #resultsContent p.third { color: #CD7F32; }
+        #resultsContent p.fourth { color: #FFFFFF; }
+        #playAgainButton { background: #6200ea; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        #playAgainButton:hover { background: #00ffcc; color: #000; }
+        #waitingMessage { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: #ffcc00; background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px; z-index: 201; }
+        .superseedCar { position: absolute; width: 70px; height: 22px; z-index: 5; animation: vibrate 0.3s infinite; }
+        .superseedCar img { width: 100%; height: 100%; object-fit: contain; }
+        @keyframes vibrate { 0% { transform: translateY(0); } 50% { transform: translateY(0.5px); } 100% { transform: translateY(0); } }
+        .player-car { box-shadow: 0 0 10px #ffcc00; }
+        .car-name { position: absolute; top: -15px; left: 14px; font-size: 11px; color: #00ffcc; text-shadow: 0 0 2px #000; background: none; padding: 2px 5px; border-radius: 3px; white-space: nowrap; z-index: 4; display: none; }
+        .car-name.show { display: block; animation: popName 1s ease-out forwards; }
+        .car-name.first { color: #FFD700; text-shadow: 0 0 5px #FFD700; }
+        .car-name.second { color: #C0C0C0; text-shadow: 0 0 4px #C0C0C0; }
+        .car-name.third { color: #CD7F32; text-shadow: 0 0 3px #CD7F32; }
+        .car-name.fourth { color: #FFFFFF; text-shadow: 0 0 2px #FFFFFF; }
+        @keyframes popName { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); opacity: 1; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+        #winnerPopup { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            font-size: 24px; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            opacity: 0.8; 
+            z-index: 300; 
+            display: none; 
+            text-align: center; 
+        }
+        #winnerPopup.show { 
+            display: block; 
+            animation: zoomOutFade 2s forwards; 
+        }
+        @keyframes zoomOutFade { 
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; } 
+            80% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; } 
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } 
+        }
+        #muteButton { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            width: 80px; 
+            height: 30px; 
+            background: #6200ea; 
+            color: #fff; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            z-index: 300; 
+            transition: background 0.2s; 
+        }
+        #muteButton:hover { background: #00ffcc; color: #000; }
+        #muteButton.muted { background: #555; }
+    </style>
+</head>
+<body>
+    <div id="namePopup">
+        <div id="namePopupContent">
+            <input type="text" id="playerNameInput" placeholder="Your name" maxlength="10">
+            <button id="joinButton">Join Race</button>
+            <div id="loadingDots" style="display: none;">...</div>
+            <div id="waitingMessage" style="display: none;">Waiting for players...</div>
+        </div>
+    </div>
+
+    <div id="resultsOverlay">
+        <div id="resultsContent">
+            <h2>Race Finished!</h2>
+            <div id="finalResults"></div>
+            <button id="playAgainButton">Play Again</button>
+        </div>
+    </div>
+
+    <div id="winnerPopup"></div>
+    <button id="muteButton">Mute</button>
+
+    <audio id="backgroundMusic" src="racing-theme-1115.mp3" preload="auto" loop></audio>
+    <audio id="successSound" src="success-bell-1111.mp3" preload="auto"></audio>
+    <audio id="failSound" src="fail-trombone-1112.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="simple-click-1110.mp3" preload="auto"></audio>
+    <audio id="winnerSound" src="crowd-cheer-1114.mp3" preload="auto"></audio>
+    <audio id="countdownSound" src="race-countdown-1113.mp3" preload="auto"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+	    <script>
+        // Global variables
+        let players = [];
+        let gameStarted = false;
+        let stockUpdateCountdown = 3;
+        let stockUpdateInterval = null;
+        let countdownInterval = null;
+        const startLineX = 150;
+        const finishLineX = 1280 - 32 * (1280 / 1960);
+        let finishOrder = [];
+        let isMusicPlaying = false;
+        let isMuted = false;
+
+        const sounds = {
+            backgroundMusic: document.getElementById('backgroundMusic'),
+            successSound: document.getElementById('successSound'),
+            failSound: document.getElementById('failSound'),
+            clickSound: document.getElementById('clickSound'),
+            winnerSound: document.getElementById('winnerSound'),
+            countdownSound: document.getElementById('countdownSound')
+        };
+        sounds.backgroundMusic.volume = 0.3;
+        sounds.successSound.volume = 0.5;
+        sounds.failSound.volume = 0.5;
+        sounds.clickSound.volume = 0.5;
+        sounds.winnerSound.volume = 0.5;
+        sounds.countdownSound.volume = 0.5;
+
+        // Core functions
+        function playSound(sound) {
+            if (!isMuted) {
+                sound.play().catch(error => console.error("Audio playback failed:", error));
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const muteButton = document.getElementById('muteButton');
+            muteButton.textContent = isMuted ? 'Unmute' : 'Mute';
+            muteButton.classList.toggle('muted', isMuted);
+            if (isMuted) {
+                Object.values(sounds).forEach(sound => sound.pause());
+            } else if (isMusicPlaying) {
+                sounds.backgroundMusic.play();
+            }
+        }
+
+        function joinGame() {
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            if (nameInput === '') {
+                alert('Please enter a name!');
+                return;
+            }
+            const loadingDots = document.getElementById('loadingDots');
+            const playerNameInput = document.getElementById('playerNameInput');
+            const joinButton = document.getElementById('joinButton');
+            const waitingMessage = document.getElementById('waitingMessage');
+            loadingDots.style.display = 'block';
+            playerNameInput.style.display = 'none';
+            joinButton.style.display = 'none';
+            waitingMessage.style.display = 'block';
+            let waitTime = 3;
+            waitingMessage.textContent = `Waiting for players... (${waitTime}s)`;
+            const waitInterval = setInterval(() => {
+                waitTime--;
+                waitingMessage.textContent = `Waiting for players... (${waitTime}s)`;
+                if (waitTime <= 0) {
+                    clearInterval(waitInterval);
+                    waitingMessage.style.display = 'none';
+                    const namePopup = document.getElementById('namePopup');
+                    namePopup.classList.add('fade-out');
+                    setTimeout(() => {
+                        namePopup.remove();
+                        createGameContainer(nameInput);
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        function createGameContainer(playerName) {
+            const gameContainer = document.createElement('div');
+            gameContainer.id = 'gameContainer';
+            gameContainer.innerHTML = `
+                <div id="stockDisplay">Last SEED: 100.00 | Current SEED: 100.00</div>
+                <button id="upButton" disabled>Up</button>
+                <button id="downButton" disabled><span id="downText">Down</span></button>
+                <div id="stockCountdown">Starting in: 3s</div>
+                <div id="stockGraphContainer">
+                    <canvas id="stockGraph" width="440" height="208"></canvas>
+                </div>
+                <div id="carContainer0" style="position: absolute; left: 150px; top: 73px;">
+                    <div id="name0" class="car-name">${playerName}</div>
+                    <div id="car0" class="superseedCar player-car"><img src="https://i.postimg.cc/P56nd7Gr/WHITE-CAR-MAIN-01.png" alt="White Car"></div>
+                </div>
+                <div id="carContainer1" style="position: absolute; left: 150px; top: 122px;">
+                    <div id="name1" class="car-name">Player 2</div>
+                    <div id="car1" class="superseedCar"><img src="https://i.postimg.cc/TYJX4wCb/BLUE-CAR-MAIN-01.png" alt="Blue Car"></div>
+                </div>
+                <div id="carContainer2" style="position: absolute; left: 150px; top: 171px;">
+                    <div id="name2" class="car-name">Player 3</div>
+                    <div id="car2" class="superseedCar"><img src="https://i.postimg.cc/3rph29Gn/GREEN-CAR-MAIN-01.png" alt="Green Car"></div>
+                </div>
+                <div id="carContainer3" style="position: absolute; left: 150px; top: 224px;">
+                    <div id="name3" class="car-name">Player 4</div>
+                    <div id="car3" class="superseedCar"><img src="https://i.postimg.cc/Fs44pcgm/ORANGE-CAR-MAIN-01.png" alt="Orange Car"></div>
+                </div>
+                <div id="carContainer4" style="position: absolute; left: 150px; top: 276px;">
+                    <div id="name4" class="car-name">Player 5</div>
+                    <div id="car4" class="superseedCar"><img src="https://i.postimg.cc/cJ2qn84p/RED-CAR-MAIN-01.png" alt="Red Car"></div>
+                </div>
+                <div id="carContainer5" style="position: absolute; left: 150px; top: 327px;">
+                    <div id="name5" class="car-name">Player 6</div>
+                    <div id="car5" class="superseedCar"><img src="https://i.postimg.cc/rpKXs9cG/YELLOW-CAR-MAIN-01.png" alt="Yellow Car"></div>
+                </div>
+                <div id="carContainer6" style="position: absolute; left: 150px; top: 378px;">
+                    <div id="name6" class="car-name">Player 7</div>
+                    <div id="car6" class="superseedCar"><img src="https://i.postimg.cc/g2cPFWTT/PURPLE-CAR-MAIN-01.png" alt="Purple Car"></div>
+                </div>
+                <div id="carContainer7" style="position: absolute; left: 150px; top: 429px;">
+                    <div id="name7" class="car-name">Player 8</div>
+                    <div id="car7" class="superseedCar"><img src="https://i.postimg.cc/cCQNZ4WV/BLACK-CAR-MAIN-01.png" alt="Black Car"></div>
+                </div>
+                <div id="playerNamePanel">${playerName}</div>
+                <div id="playerNamePanel1">Player 2</div>
+                <div id="playerNamePanel2">Player 3</div>
+                <div id="playerNamePanel3">Player 4</div>
+                <div id="playerNamePanel4">Player 5</div>
+                <div id="playerNamePanel5">Player 6</div>
+                <div id="playerNamePanel6">Player 7</div>
+                <div id="playerNamePanel7">Player 8</div>
+            `;
+            document.body.appendChild(gameContainer);
+
+            players = [
+                { id: 'car0', containerId: 'carContainer0', nameId: 'name0', panelId: 'playerNamePanel', x: 150, y: 73, targetX: 150, guess: null, isHuman: true, name: playerName, hasFinished: false, place: 0, score: 0 },
+                { id: 'car1', containerId: 'carContainer1', nameId: 'name1', panelId: 'playerNamePanel1', x: 150, y: 122, targetX: 150, guess: null, isHuman: false, name: 'Player 2', hasFinished: false, place: 0, score: 0 },
+                { id: 'car2', containerId: 'carContainer2', nameId: 'name2', panelId: 'playerNamePanel2', x: 150, y: 171, targetX: 150, guess: null, isHuman: false, name: 'Player 3', hasFinished: false, place: 0, score: 0 },
+                { id: 'car3', containerId: 'carContainer3', nameId: 'name3', panelId: 'playerNamePanel3', x: 150, y: 224, targetX: 150, guess: null, isHuman: false, name: 'Player 4', hasFinished: false, place: 0, score: 0 },
+                { id: 'car4', containerId: 'carContainer4', nameId: 'name4', panelId: 'playerNamePanel4', x: 150, y: 276, targetX: 150, guess: null, isHuman: false, name: 'Player 5', hasFinished: false, place: 0, score: 0 },
+                { id: 'car5', containerId: 'carContainer5', nameId: 'name5', panelId: 'playerNamePanel5', x: 150, y: 327, targetX: 150, guess: null, isHuman: false, name: 'Player 6', hasFinished: false, place: 0, score: 0 },
+                { id: 'car6', containerId: 'carContainer6', nameId: 'name6', panelId: 'playerNamePanel6', x: 150, y: 378, targetX: 150, guess: null, isHuman: false, name: 'Player 7', hasFinished: false, place: 0, score: 0 },
+                { id: 'car7', containerId: 'carContainer7', nameId: 'name7', panelId: 'playerNamePanel7', x: 150, y: 429, targetX: 150, guess: null, isHuman: false, name: 'Player 8', hasFinished: false, place: 0, score: 0 }
+            ];
+
+            const upButton = document.getElementById('upButton');
+            const downButton = document.getElementById('downButton');
+            const canvas = document.getElementById('stockGraph');
+            const ctx = canvas.getContext('2d');
+            const stockDisplay = document.getElementById('stockDisplay');
+            const stockCountdown = document.getElementById('stockCountdown');
+            const muteButton = document.getElementById('muteButton');
+
+            let stockValue = 100;
+            let lastStockValue = 100;
+            const minValue = 48;
+            const maxValue = 148;
+            const canvasHeight = canvas.height;
+            const canvasWidth = canvas.width;
+            let stockPoints = [{ x: 0, y: valueToY(stockValue) }];
+
+            upButton.addEventListener('click', () => guess(players[0], 'up'));
+            downButton.addEventListener('click', () => guess(players[0], 'down'));
+            muteButton.addEventListener('click', toggleMute);
+            document.getElementById('playAgainButton').addEventListener('click', resetGame);
+
+            function valueToY(value) {
+                const range = maxValue - minValue;
+                let y = canvasHeight - ((value - minValue) / range) * canvasHeight;
+                return Math.max(0, Math.min(canvasHeight, y));
+            }
+
+            function drawGraph() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 1;
+                for (let y = 0; y <= canvasHeight; y += canvasHeight / 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvasWidth, y);
+                    ctx.stroke();
+                }
+                for (let x = 0; x <= canvasWidth; x += canvasWidth / 5) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvasHeight);
+                    ctx.stroke();
+                }
+                ctx.fillStyle = '#00f7ff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('148', -5, 10);
+                ctx.fillText('100', -5, canvasHeight / 2);
+                ctx.fillText('48', -5, canvasHeight - 5);
+                ctx.beginPath();
+                ctx.strokeStyle = stockValue > lastStockValue ? '#00ff00' : stockValue < lastStockValue ? '#ff0000' : '#00f7ff';
+                ctx.lineWidth = 4;
+                if (stockPoints.length > 0) {
+                    ctx.moveTo(stockPoints[0].x, stockPoints[0].y);
+                    for (let i = 1; i < stockPoints.length; i++) {
+                        ctx.lineTo(stockPoints[i].x, stockPoints[i].y);
+                    }
+                    ctx.stroke();
+                    const lastPoint = stockPoints[stockPoints.length - 1];
+                    ctx.fillStyle = '#00f7ff';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'left';
+                    const adjustedY = Math.max(10, lastPoint.y); // Ensure text doesn't go above canvas
+                    ctx.fillText(`${stockValue.toFixed(2)}`, lastPoint.x + 10, adjustedY);
+                }
+            }
+
+            function updateStock() {
+                if (!gameStarted) return;
+                lastStockValue = stockValue;
+                const change = parseFloat((Math.random() * 20 - 10).toFixed(2));
+                stockValue = Math.max(minValue, Math.min(maxValue, stockValue + change));
+                stockValue = parseFloat(stockValue.toFixed(2));
+                stockDisplay.textContent = `Last SEED: ${lastStockValue.toFixed(2)} | Current SEED: ${stockValue.toFixed(2)}`;
+                const lastPoint = stockPoints.length > 0 ? stockPoints[stockPoints.length - 1] : { x: 0, y: valueToY(stockValue) };
+                stockPoints.push({ x: lastPoint.x + 10, y: valueToY(stockValue) });
+                if (stockPoints.length > 20) {
+                    stockPoints.shift();
+                    stockPoints = stockPoints.map(point => ({ x: point.x - 10, y: point.y }));
+                }
+                drawGraph();
+                players.forEach(player => checkGuess(player));
+                players.forEach(player => {
+                    if (!player.isHuman && player.guess === null && !player.hasFinished) {
+                        guess(player, Math.random() < 0.5 ? 'up' : 'down');
+                    }
+                });
+                stockUpdateCountdown = 3;
+                stockCountdown.textContent = `Next update in: ${stockUpdateCountdown}s`;
+            }
+
+            function updateStockCountdown() {
+                if (!gameStarted) return;
+                stockUpdateCountdown--;
+                if (stockUpdateCountdown < 0) stockUpdateCountdown = 3;
+                stockCountdown.textContent = `Next update in: ${stockUpdateCountdown}s`;
+            }
+
+            function guess(player, direction) {
+                if (!gameStarted || player.guess !== null || player.hasFinished) return;
+                player.guess = direction;
+                if (player.isHuman) {
+                    playSound(sounds.clickSound);
+                    upButton.disabled = true;
+                    downButton.disabled = true;
+                    upButton.style.background = '';
+                    downButton.style.background = '';
+                }
+            }
+
+            function checkGuess(player) {
+                if (!gameStarted || player.guess === null || player.hasFinished) return;
+                const correct = player.guess === 'up' ? stockValue > lastStockValue : stockValue < lastStockValue;
+                player.targetX += correct ? 150 : -30;
+                player.targetX = Math.max(startLineX, Math.min(finishLineX, player.targetX));
+                if (player.isHuman) {
+                    if (correct) {
+                        playSound(sounds.successSound);
+                    } else {
+                        playSound(sounds.failSound);
+                    }
+                }
+                player.guess = null;
+                if (player.isHuman) {
+                    upButton.disabled = false;
+                    downButton.disabled = false;
+                    upButton.style.background = '';
+                    downButton.style.background = '';
+                }
+            }
+
+            function moveCar(player) {
+                if (!gameStarted || player.hasFinished) return;
+                player.x += (player.targetX - player.x) * 0.1;
+                player.x = Math.max(startLineX, Math.min(finishLineX - 70, player.x));
+                if (Math.abs(player.x - (finishLineX - 70)) < 1) {
+                    player.x = player.targetX = finishLineX - 70;
+                    player.hasFinished = true;
+                    finishOrder.push(player);
+                    player.place = finishOrder.length;
+                    player.score += player.place === 1 ? 10 : player.place === 2 ? 7 : player.place === 3 ? 5 : player.place === 4 ? 3 : 0;
+                    const panel = document.getElementById(player.panelId);
+                    panel.textContent = `${player.name} ${player.place}${player.place === 1 ? 'st' : player.place === 2 ? 'nd' : player.place === 3 ? 'rd' : 'th'}`;
+                    panel.classList.add(player.place === 1 ? 'first' : player.place === 2 ? 'second' : player.place === 3 ? 'third' : 'fourth');
+                    const nameElement = document.getElementById(player.nameId);
+                    nameElement.classList.add('show', player.place === 1 ? 'first' : player.place === 2 ? 'second' : player.place === 3 ? 'third' : 'fourth');
+                    showWinnerPopup(player);
+                    playSound(sounds.winnerSound);
+                    triggerConfetti(player);
+                    if (finishOrder.length === 4) {
+                        gameStarted = false;
+                        clearInterval(stockUpdateInterval);
+                        showResults();
+                    }
+                }
+                const container = document.getElementById(player.containerId);
+                container.style.left = `${player.x}px`;
+                container.style.top = `${player.y}px`;
+            }
+
+            function showWinnerPopup(player) {
+                const winnerPopup = document.getElementById('winnerPopup');
+                winnerPopup.textContent = `${player.name} ${player.place}${player.place === 1 ? 'st' : player.place === 2 ? 'nd' : player.place === 3 ? 'rd' : 'th'}`;
+                winnerPopup.className = '';
+                winnerPopup.classList.add(player.place === 1 ? 'first' : player.place === 2 ? 'second' : player.place === 3 ? 'third' : 'fourth');
+                winnerPopup.classList.add('show');
+                setTimeout(() => {
+                    winnerPopup.classList.remove('show');
+                }, 2000);
+            }
+
+            function animate() {
+                players.forEach(player => moveCar(player));
+                requestAnimationFrame(animate);
+            }
+
+            function startGameWithCountdown() {
+                gameStarted = false;
+                const stockCountdown = document.getElementById('stockCountdown');
+                const carNames = players.map((_, i) => document.getElementById(`name${i}`));
+                carNames.forEach(name => name.style.display = 'none');
+                let countdownTime = 3;
+                stockCountdown.textContent = `Starting in: ${countdownTime}s`;
+                playSound(sounds.countdownSound);
+                countdownInterval = setInterval(() => {
+                    countdownTime--;
+                    stockCountdown.textContent = `Starting in: ${countdownTime}s`;
+                    if (countdownTime < 0) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                        sounds.countdownSound.pause();
+                        sounds.countdownSound.currentTime = 0;
+                        carNames.forEach(name => name.style.display = 'block');
+                        gameStarted = true;
+                        document.getElementById('upButton').disabled = false;
+                        document.getElementById('downButton').disabled = false;
+                        updateStock();
+                        if (stockUpdateInterval) clearInterval(stockUpdateInterval);
+                        stockUpdateInterval = setInterval(updateStock, 3000);
+                    }
+                }, 1000);
+            }
+
+            function triggerConfetti(player) {
+                if (player.place > 4 || !window.confetti) return;
+                let particleCount;
+                switch (player.place) {
+                    case 1: particleCount = 300; break;
+                    case 2: particleCount = 200; break;
+                    case 3: particleCount = 100; break;
+                    case 4: particleCount = 50; break;
+                }
+                const colors = player.place === 1 ? ['#FFD700', '#FFFFFF'] : 
+                              player.place === 2 ? ['#C0C0C0', '#FFFFFF'] : 
+                              player.place === 3 ? ['#CD7F32', '#FFFFFF'] : 
+                              ['#FFFFFF'];
+                try {
+                    confetti({ particleCount, spread: 70, origin: { x: 0.5, y: 0.5 }, colors, zIndex: 1000 });
+                } catch (e) {
+                    console.error("Confetti failed:", e);
+                }
+            }
+
+            function triggerWinnerConfetti() {
+                if (!window.confetti) return;
+                try {
+                    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFFFFF', '#FF0000', '#00FF00'], zIndex: 1000 });
+                } catch (e) {
+                    console.error("Winner confetti failed:", e);
+                }
+            }
+
+            function showResults() {
+                const resultsOverlay = document.getElementById('resultsOverlay');
+                const finalResults = document.getElementById('finalResults');
+                let resultsHTML = '';
+                finishOrder.forEach((player, index) => {
+                    const position = index + 1;
+                    const positionClass = position === 1 ? 'first' : position === 2 ? 'second' : position === 3 ? 'third' : 'fourth';
+                    const pointsEarned = position === 1 ? 10 : position === 2 ? 7 : position === 3 ? 5 : position === 4 ? 3 : 0;
+                    resultsHTML += `<p class="${positionClass}">${position}${position === 1 ? 'st' : position === 2 ? 'nd' : position === 3 ? 'rd' : 'th'}: ${player.name} +${pointsEarned} points</p>`;
+                });
+                finalResults.innerHTML = resultsHTML;
+                resultsOverlay.classList.remove('show');
+                void resultsOverlay.offsetWidth;
+                resultsOverlay.classList.add('show');
+                triggerWinnerConfetti();
+            }
+
+            function resetGame() {
+                if (stockUpdateInterval) clearInterval(stockUpdateInterval);
+                if (countdownInterval) clearInterval(countdownInterval);
+                const existingGameContainer = document.getElementById('gameContainer');
+                if (existingGameContainer) existingGameContainer.remove();
+                const winnerPopup = document.getElementById('winnerPopup');
+                winnerPopup.classList.remove('show');
+                players.forEach(player => {
+                    player.x = player.targetX = 150;
+                    player.hasFinished = false;
+                    player.place = 0;
+                    player.guess = null;
+                    const panel = document.getElementById(player.panelId);
+                    if (panel) {
+                        panel.className = '';
+                        panel.textContent = player.name;
+                    }
+                    const nameElement = document.getElementById(player.nameId);
+                    if (nameElement) nameElement.className = 'car-name';
+                });
+                finishOrder = [];
+                gameStarted = false;
+                stockValue = lastStockValue = 100;
+                stockPoints = [{ x: 0, y: valueToY(stockValue) }];
+                sounds.backgroundMusic.pause();
+                sounds.backgroundMusic.currentTime = 0;
+                isMusicPlaying = false;
+                document.getElementById('resultsOverlay').classList.remove('show');
+                const namePopup = document.createElement('div');
+                namePopup.id = 'namePopup';
+                namePopup.innerHTML = `
+                    <div id="namePopupContent">
+                        <input type="text" id="playerNameInput" placeholder="Your name" maxlength="10">
+                        <button id="joinButton">Join Race</button>
+                        <div id="loadingDots" style="display: none;">...</div>
+                        <div id="waitingMessage" style="display: none;">Waiting for players...</div>
+                    </div>
+                `;
+                document.body.appendChild(namePopup);
+                document.getElementById('joinButton').addEventListener('click', joinGame);
+                document.getElementById('playerNameInput').addEventListener('keypress', (e) => e.key === 'Enter' && joinGame());
+                document.getElementById('playerNameInput').addEventListener('input', () => {
+                    if (!isMusicPlaying && !isMuted) playSound(sounds.backgroundMusic);
+                    isMusicPlaying = true;
+                });
+                startGameWithCountdown();
+            }
+
+            // Initialize
+            setInterval(updateStockCountdown, 1000);
+            drawGraph();
+            animate();
+            setTimeout(startGameWithCountdown, 0);
+        }
+
+        // Initial event listeners
+        document.getElementById('joinButton').addEventListener('click', joinGame);
+        document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') joinGame();
+        });
+        document.getElementById('playerNameInput').addEventListener('input', () => {
+            if (!isMusicPlaying && !isMuted) playSound(sounds.backgroundMusic);
+            isMusicPlaying = true;
+        });
+        document.getElementById('muteButton').addEventListener('click', toggleMute);
+    </script>
+</body>
+</html>
