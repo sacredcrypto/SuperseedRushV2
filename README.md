@@ -1,7 +1,7 @@
-# SuperseedRushGameVersion1
+# SuperseedRushV2
 
 ## Overview
-*SuperseedRushGameVersion1* is a strategic racing game demo by *sacredcrypto* for Superseed XYZ. Built with Grok (xAI), it’s a DeFi-inspired racer where you predict SEED value shifts (48-148) to outpace 7 AI rivals. Features my custom graphics, sounds, live graph, and confetti—a solo demo with multiplayer DeFi potential.
+*SuperseedRushV2* is a strategic racing game demo by *sacredcrypto* for Superseed XYZ. Built with Grok (xAI), it’s a DeFi-inspired racer where you predict SEED value shifts (48-148) to outpace 7 AI rivals. Features my custom graphics, sounds, live graph, and confetti—a solo demo with multiplayer DeFi potential.
 
 ## How to Play
 - Open the game in a browser.
@@ -24,6 +24,6 @@
 [Click here](https://sacredcrypto.github.io/SuperseedRushV2/)
 
 ## Future Vision
-This demo is just the start—imagine *SuperseedRushGameVersion1* as a multiplayer DeFi racer: real players, real SEED stakes, real rewards. Stay tuned!
+This demo is just the start—imagine *SuperseedRushV2* as a multiplayer DeFi racer: real players, real SEED stakes, real rewards. Stay tuned!
 
 #SuperseedXYZ
